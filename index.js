@@ -103,6 +103,21 @@ client.connect((err) => {
     });
   });
 
+  app.patch("/updateorder/:id", (req, res) => {
+    console.log(req.body);
+    const orderData = req.body;
+    orders
+      .updateOne(
+        { _id: ObjectId(req.params.id) },
+        {
+          $set: { order_state: "completed" },
+        }
+      )
+      .then((result) => {
+        console.log(result);
+      });
+  });
+
   //deleting product
   app.delete("/deleteservice/:id", (req, res) => {
     services
