@@ -38,6 +38,11 @@ client.connect((err) => {
       res.send(documents);
     });
   });
+  app.get("allorders", (req, res) => {
+    orders.find({}).toArray((err, documents) => {
+      res.send(documents);
+    });
+  });
   app.get("/admin", (req, res) => {
     admins.find({ email: req.query.email }).toArray((err, documents) => {
       res.send(documents);
