@@ -104,13 +104,13 @@ client.connect((err) => {
   });
 
   app.patch("/updateorder/:id", (req, res) => {
-    console.log(req.body);
-    const orderData = req.body;
+    console.log(req.query);
+    console.log(req.params);
     orders
       .updateOne(
         { _id: ObjectId(req.params.id) },
         {
-          $set: { order_state: "Completed" },
+          $set: { order_state: req.query.state },
         }
       )
       .then((result) => {
