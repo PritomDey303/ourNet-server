@@ -114,6 +114,7 @@ client.connect((err) => {
         }
       )
       .then((result) => {
+        res.send(result);
         console.log(result);
       });
   });
