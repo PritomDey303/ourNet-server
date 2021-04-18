@@ -1,6 +1,8 @@
 # OurNet(server site code)
 
-## https://ournet303.netlify.app/
+## Live site: https://ournet303.netlify.app/
+
+## Server site Link: https://ournet303.herokuapp.com/
 
 ### Website Info:
 
