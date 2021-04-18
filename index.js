@@ -29,6 +29,7 @@ client.connect((err) => {
   // perform actions on the collection object
   app.get("/services", (req, res) => {
     services.find({}).toArray((err, documents) => {
+      console.log(services);
       res.send(documents);
     });
   });
@@ -38,8 +39,10 @@ client.connect((err) => {
       res.send(documents);
     });
   });
-  app.get("allorders", (req, res) => {
+
+  app.get("/allorders", (req, res) => {
     orders.find({}).toArray((err, documents) => {
+      console.log(documents);
       res.send(documents);
     });
   });
