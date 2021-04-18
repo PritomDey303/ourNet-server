@@ -110,7 +110,7 @@ client.connect((err) => {
       .updateOne(
         { _id: ObjectId(req.params.id) },
         {
-          $set: { order_state: "completed" },
+          $set: { order_state: "Completed" },
         }
       )
       .then((result) => {
