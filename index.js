@@ -1,145 +1,118 @@
-const express = require("express");
-const app = express();
-const ObjectId = require("mongodb").ObjectId;
-require("dotenv").config();
-const port = 5000;
-const bodyParser = require("body-parser");
-const cors = require("cors");
-app.use(cors());
-app.use(bodyParser.json());
-const DB_USER = process.env.DB_USER;
-const DB_NAME = process.env.DB_NAME;
-const DB_PASS = process.env.DB_PASS;
-//////////////////////
+const express = require('express');
+const { MongoClient, ObjectId } = require('mongodb');
+const cors = require('cors');
+require('dotenv').config();
 
-const MongoClient = require("mongodb").MongoClient;
-const uri = ` mongodb+srv://${DB_USER}:${DB_PASS}@cluster0.yvlli.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`;
+const app = express();
+const port = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
+console.log(process.env.DB_NAME,process.env.DB_PASS,process.env.DB_USER)
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dwyjn.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-/////////////////////
-client.connect((err) => {
-  const services = client.db(DB_NAME).collection("products");
-  const reviews = client.db(DB_NAME).collection("reviews");
-  const features = client.db(DB_NAME).collection("features");
-  const orders = client.db(DB_NAME).collection("orders");
-  const admins = client.db(DB_NAME).collection("admin");
 
-  // perform actions on the collection object
-  app.get("/services", (req, res) => {
-    services.find({}).toArray((err, documents) => {
-      console.log(services);
+async function run() {
+  try {
+    await client.connect();
+    console.log('Connected to database');
+
+    const db = client.db(process.env.DB_NAME);
+    const services = db.collection('products');
+    const reviews = db.collection('reviews');
+    const features = db.collection('features');
+    const orders = db.collection('orders');
+    const admins = db.collection('admin');
+
+    app.get('/services', async (req, res) => {
+      const documents = await services.find({}).toArray();
       res.send(documents);
     });
-  });
 
-  app.get("/orders", (req, res) => {
-    orders.find({ email: req.query.email }).toArray((err, documents) => {
+    app.get('/orders', async (req, res) => {
+      const documents = await orders.find({ email: req.query.email }).toArray();
       res.send(documents);
     });
-  });
 
-  app.get("/allorders", (req, res) => {
-    orders.find({}).toArray((err, documents) => {
-      console.log(documents);
+    app.get('/allorders', async (req, res) => {
+      const documents = await orders.find({}).toArray();
       res.send(documents);
     });
-  });
-  app.get("/admin", (req, res) => {
-    admins.find({ email: req.query.email }).toArray((err, documents) => {
+
+    app.get('/admin', async (req, res) => {
+      const documents = await admins.find({ email: req.query.email }).toArray();
       res.send(documents);
     });
-  });
 
-  app.get("/features", (req, res) => {
-    features.find({}).toArray((err, documents) => {
+    app.get('/features', async (req, res) => {
+      const documents = await features.find({}).toArray();
       res.send(documents);
     });
-  });
 
-  app.get("/reviews", (req, res) => {
-    reviews.find({}).toArray((err, documents) => {
+    app.get('/reviews', async (req, res) => {
+      const documents = await reviews.find({}).toArray();
       res.send(documents);
     });
-  });
 
-  app.post("/addservices", (req, res) => {
-    const serviceData = req.body;
-    services.insertOne(serviceData).then((result) => {
-      res.send(result.insertedCount > 0);
+    app.post('/addservices', async (req, res) => {
+      const result = await services.insertOne(req.body);
+      res.send({ success: result.acknowledged });
     });
-  });
 
-  app.post("/addreview", (req, res) => {
-    console.log(req.body);
-    const reviewData = req.body;
-    reviews.insertOne(reviewData).then((result) => {
-      res.send(result.insertedCount > 0);
+    app.post('/addreview', async (req, res) => {
+      const result = await reviews.insertOne(req.body);
+      res.send({ success: result.acknowledged });
     });
-  });
 
-  app.post("/addfeatures", (req, res) => {
-    console.log(req.body);
-    const featuresData = req.body;
-    features.insertOne(featuresData).then((result) => {
-      res.send(result.insertedCount > 0);
+    app.post('/addfeatures', async (req, res) => {
+      const result = await features.insertOne(req.body);
+      res.send({ success: result.acknowledged });
     });
-  });
 
-  app.post("/addorders", (req, res) => {
-    console.log(req.body);
-    const orderData = req.body;
-    orders.insertOne(orderData).then((result) => {
-      res.send(result.insertedCount > 0);
+    app.post('/addorders', async (req, res) => {
+      const result = await orders.insertOne(req.body);
+      res.send({ success: result.acknowledged });
     });
-  });
 
-  app.post("/addadmin", (req, res) => {
-    console.log(req.body);
-    const admin = req.body;
-    admins.insertOne(admin).then((result) => {
-      res.send(result.insertedCount > 0);
+    app.post('/addadmin', async (req, res) => {
+      const result = await admins.insertOne(req.body);
+      res.send({ success: result.acknowledged });
     });
-  });
 
-  app.patch("/updateorder/:id", (req, res) => {
-    console.log(req.query);
-    console.log(req.params);
-    orders
-      .updateOne(
-        { _id: ObjectId(req.params.id) },
-        {
-          $set: { order_state: req.query.state },
-        }
-      )
-      .then((result) => {
-        res.send(result);
-        console.log(result);
-      });
-  });
+    app.patch('/updateorder/:id', async (req, res) => {
+      const result = await orders.updateOne(
+        { _id: new ObjectId(req.params.id) },
+        { $set: { order_state: req.query.state } }
+      );
+      res.send(result);
+    });
 
-  //deleting product
-  app.delete("/deleteservice/:id", (req, res) => {
-    services
-      .deleteOne({ _id: ObjectId(req.params.id) })
+    app.delete('/deleteservice/:id', async (req, res) => {
+      const result = await services.deleteOne({ _id: new ObjectId(req.params.id) });
+      res.send(result);
+    });
 
-      .then((result) => res.send(result));
-  });
+    app.delete('/deletefeature/:id', async (req, res) => {
+      const result = await features.deleteOne({ _id: new ObjectId(req.params.id) });
+      res.send(result);
+    });
 
-  app.delete("/deletefeature/:id", (req, res) => {
-    console.log(req);
-    features
-      .deleteOne({ _id: ObjectId(req.params.id) })
+    app.delete('/deletereview/:id', async (req, res) => {
+      const result = await reviews.deleteOne({ _id: new ObjectId(req.params.id) });
+      res.send(result);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-      .then((result) => res.send(result));
-  });
-  app.delete("/deletereview/:id", (req, res) => {
-    console.log(req);
-    reviews
-      .deleteOne({ _id: ObjectId(req.params.id) })
+run();
 
-      .then((result) => res.send(result));
-  });
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
-app.listen(process.env.PORT || port);
